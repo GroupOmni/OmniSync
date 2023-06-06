@@ -6,6 +6,8 @@ import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,17 +30,16 @@ class NSDHelperDiscover {
 
     private OnResolveCompleted onResolveCompletedListUpdate;
 
+//    public Thread startDLthread;
+//    public Thread stopDLthread;
 
-    NSDHelperDiscover(Context context, OnResolveCompleted callBackAPI) {
+
+    NSDHelperDiscover(Context context) {
         this.context = context;
 
         app = (OmniSyncApplication) context;
 
-//        if (app.deviceList == null) {
-            app.deviceList = new ArrayList<>();
-//        }
-
-        onResolveCompletedListUpdate = callBackAPI;
+        app.serviceList = new ArrayList<>();
 
         discoveredServices = new ArrayList<>();
         resolvedServices = new ArrayList<>();
@@ -59,19 +60,27 @@ class NSDHelperDiscover {
         void updateDeviceList();
     }
 
+    public Thread newStopDLListener(){
+        return new Thread(new StopDiscoverListener());
+    }
+
     private void resolveDiscoveredServices() {
         for (NsdServiceInfo service : discoveredServices) {
             NsdManager.ResolveListener localResolveListener = initializeResolveListener();
 
             synchronized (resolveLock) {
-                Log.d(TAG, "resolveLock acquired");
+//                Log.d(TAG, "resolveLock acquired");
                 localResolveListenerList.add(localResolveListener);
 
                 Thread resolveThread = new Thread(){
 
                     @Override
                     public void run() {
-                        nsdManager.resolveService(service, localResolveListenerList.get(localResolveListenerList.size() - 1));
+                        try {
+                            nsdManager.resolveService(service, localResolveListenerList.get(localResolveListenerList.size() - 1));
+                        }catch (IllegalArgumentException e){
+
+                        }
                     }
                 };
 
@@ -84,12 +93,20 @@ class NSDHelperDiscover {
                 }
 
                 isResolved = false;
-                Log.d(TAG, "resolveLock FALSE");
-                Log.d(TAG, "EXIT");
+//                Log.d(TAG, "resolveLock FALSE");
+//                Log.d(TAG, "EXIT");
 
             }
         }
-        onResolveCompletedListUpdate.updateDeviceList();
+
+        if(onResolveCompletedListUpdate != null) {
+            onResolveCompletedListUpdate.updateDeviceList();
+        }
+        app.peerManagerUtils.askPeersForCapabilities(app.httpClient);
+    }
+
+    public void setOnResolveCompletedListUpdate(OnResolveCompleted callBackAPI){
+        onResolveCompletedListUpdate = callBackAPI;
     }
 
     private class StopDiscoverListener implements Runnable{
@@ -121,14 +138,14 @@ class NSDHelperDiscover {
 
             @Override
             public void onDiscoveryStarted(String regType) {
-                Log.d(TAG, "Service discovery started");
+//                Log.d(TAG, "Service discovery started");
             }
 
             @Override
             public void onServiceFound(NsdServiceInfo service) {
-                Log.d(TAG, "Service discovery success " + service);
+//                Log.d(TAG, "Service discovery success " + service);
                 if (!service.getServiceType().equals(Constants.NSD_SERVICE_TYPE)) {
-                    Log.d(TAG, "Unknown Service Type: " + service.getServiceType());
+//                    Log.d(TAG, "Unknown Service Type: " + service.getServiceType());
                 } else if (service.getServiceName().contains(Constants.NSD_SERVICE_NAME)) {
                     discoveredServices.add(service);
                 }
@@ -147,13 +164,13 @@ class NSDHelperDiscover {
 
             @Override
             public void onStartDiscoveryFailed(String serviceType, int errorCode) {
-                Log.e(TAG, "Discovery failed: Error code:" + errorCode);
+//                Log.e(TAG, "Discovery failed: Error code:" + errorCode);
                 nsdManager.stopServiceDiscovery(this);
             }
 
             @Override
             public void onStopDiscoveryFailed(String serviceType, int errorCode) {
-                Log.e(TAG, "Discovery failed: Error code:" + errorCode);
+//                Log.e(TAG, "Discovery failed: Error code:" + errorCode);
                 nsdManager.stopServiceDiscovery(this);
             }
         };
@@ -167,43 +184,49 @@ class NSDHelperDiscover {
 
             @Override
             public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
-                Log.e(TAG, "Resolve failed for service: " + serviceInfo + ", Error code: " + errorCode);
+//                Log.e(TAG, "Resolve failed for service: " + serviceInfo + ", Error code: " + errorCode);
                 if (errorCode == NsdManager.FAILURE_ALREADY_ACTIVE) {
                     Log.e(TAG, "FAILURE_ALREADY_ACTIVE");
                 }
 
                 synchronized (resolveLock) {
                     isResolved = true;
-                    Log.d(TAG, "isResolved TRUE");
+//                    Log.d(TAG, "isResolved TRUE");
                     resolveLock.notifyAll();
-                    Log.d(TAG, "notify ALL");
+//                    Log.d(TAG, "notify ALL");
                 }
             }
 
             @Override
             public void onServiceResolved(NsdServiceInfo serviceInfo) {
-                Log.d(TAG, "Resolve Succeeded. " + serviceInfo);
+//                Log.d(TAG, "Resolve Succeeded. " + serviceInfo);
 
                 resolvedServices.add(serviceInfo);
-                Log.d(TAG, "No of discovered devices in onServiceFound : " + String.valueOf(resolvedServices.size()));
+//                Log.d(TAG, "No of discovered devices in onServiceFound : " + String.valueOf(resolvedServices.size()));
+
+                app.deviceList = new ArrayList<>();
 
                 for(NsdServiceInfo disSer : resolvedServices){
-
-                    DeviceListItem device = new DeviceListItem(disSer.getHost().toString(), disSer.getPort());
+                    String hostIP = disSer.getHost().toString();
+                    hostIP = hostIP.replaceFirst("/", "");
+                    DeviceListItem device = new DeviceListItem(hostIP, disSer.getPort());
 
                     if(!app.deviceList.contains(device)){
                         app.deviceList.add(device);
+                        app.serviceList.add(disSer);
                     }
-
                 }
                 synchronized (resolveLock) {
                     isResolved = true;
-                    Log.d(TAG, "isResolved TRUE");
+//                    Log.d(TAG, "isResolved TRUE");
                     resolveLock.notifyAll();
-                    Log.d(TAG, "notify ALL");
+//                    Log.d(TAG, "notify ALL");
                 }
+
+
             }
         };
+
 
         return localResolveListener;
     }

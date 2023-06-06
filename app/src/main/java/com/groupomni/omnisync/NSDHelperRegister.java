@@ -45,7 +45,7 @@ class NSDHelperRegister {
     private void initializeServerSocket() {
         try {
             // Initialize a server socket on the next available port.
-            serverSocket = new ServerSocket(56000);
+            serverSocket = new ServerSocket(8081);
         } catch (IOException e) {
             e.printStackTrace();
         }
