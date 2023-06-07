@@ -11,11 +11,7 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 public class HTTPClient {
 
@@ -33,14 +29,39 @@ public class HTTPClient {
                     @Override
                     public void onResponse(JSONObject response) {
 //                        Log.d("RESPONSE", response.toString());
-                        pmu.reportCapabilityResponse();
+                        pmu.reportResponse();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("RESPONSE", error.toString());
-                        pmu.reportCapabilityResponse();
+                        pmu.reportResponse();
+                    }
+                });
+
+        RequestQueue requestQueue = Volley.newRequestQueue(appContext);
+        requestQueue.add(jsonObjectRequest);
+
+        return "response returned";
+    }
+
+    public String getFilesOnRemote(String url, PeerManagerCallBack pmu) throws IOException {
+
+        url += "/" + "hostCapabilities";
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+//                        Log.d("RESPONSE", response.toString());
+                pmu.processResponse(response);
+            }
+        },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("RESPONSE", error.toString());
+                        pmu.reportResponse();
                     }
                 });
 
@@ -51,7 +72,8 @@ public class HTTPClient {
     }
 
     public interface PeerManagerCallBack{
-        public void reportCapabilityResponse();
+        public void reportResponse();
+        public void processResponse(JSONObject response);
     }
 }
 

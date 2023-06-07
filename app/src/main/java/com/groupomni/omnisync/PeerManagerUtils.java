@@ -3,6 +3,8 @@ package com.groupomni.omnisync;
 import android.content.Context;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -43,11 +45,16 @@ public class PeerManagerUtils implements HTTPClient.PeerManagerCallBack{
     }
 
     @Override
-    public void reportCapabilityResponse() {
+    public void reportResponse() {
         respondedHosts += 1;
         if(respondedHosts == noOfPeers){
             Log.d("COMPLETION", "All peers responded for capability request");
         }
+    }
+
+    @Override
+    public void processResponse(JSONObject response) {
+
     }
 
 

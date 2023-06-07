@@ -34,10 +34,12 @@ public class OmniSyncApplication extends Application {
 
     public Context appContext;
 
-//    public class Peers{
-//        public String hostIP;
-//        public int port;
-//    }
+    public String syncFolder;
+
+    public FileMangerUtils fileMangerUtils;
 
     public String selfIP;
+
+    public SyncFTPServer ftpServer;
+    public SyncFTPClient ftpClient;
 }

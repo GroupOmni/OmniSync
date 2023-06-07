@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Created-By: Apache Maven 3.6.1
+Built-By: jitpack
+Build-Jdk: 11.0.2
+Implementation-Title: java-ipfs-http-client
+Implementation-Version: v1.4.1
+Implementation-Vendor-Id: com.github.ipfs
+Implementation-URL: https://github.com/ipfs/java-ipfs-http-client
+

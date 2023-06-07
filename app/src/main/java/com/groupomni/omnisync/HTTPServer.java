@@ -1,6 +1,7 @@
 package com.groupomni.omnisync;
 
 import android.content.Context;
+import android.net.Uri;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ public class HTTPServer extends NanoHTTPD{
     private OmniSyncApplication app;
 
     private enum GetAPICall {
-        hello, hostCapabilities
+        hello, hostCapabilities, files
     }
 
     public HTTPServer(int port, Context context) {
@@ -79,6 +80,14 @@ public class HTTPServer extends NanoHTTPD{
                     }
 
                     return newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/json", response.toString());
+                case files:
+                    if(app.fileMangerUtils == null){
+                        return newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/json", "{}");
+                    }
+
+                    HashMap<String, HashMap<String, Object>> responseHashMap = app.fileMangerUtils.scanFolder(Uri.parse(app.syncFolder));
+
+                    return newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/json", app.fileMangerUtils.hashMapToJson(responseHashMap));
                 default:
                     return newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/json", "{\"error\":\"Invalid endpoint\"}");
             }

@@ -4,19 +4,14 @@ import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.viewpager2.widget.ViewPager2;
-
+import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -28,13 +23,22 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -62,6 +66,14 @@ public class MainActivity extends AppCompatActivity {
 
     private final int STORAGE_PERMISSION_CODE = 1;
 
+    private ActivityResultLauncher<Intent> folderSelectLauncher;
+
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor prefEditor;
+
+    private String syncFolder;
+    private FileMangerUtils fileManger;
+
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -82,6 +94,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        app = (OmniSyncApplication) getApplicationContext();
+
+        sharedPreferences = getSharedPreferences("OmniSyncPref", Context.MODE_PRIVATE);
+        prefEditor  = sharedPreferences.edit();
 
         if (ContextCompat.checkSelfPermission(MainActivity.this, WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[] { WRITE_EXTERNAL_STORAGE }, 100);
@@ -106,14 +123,49 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        fileManger = new FileMangerUtils(getApplicationContext());
+
+
+
+        app.fileMangerUtils = fileManger;
+
+        folderSelectLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if(result.getResultCode()== Activity.RESULT_OK){
+                    Intent intent = result.getData();
+                    Uri uri = intent.getData();
+                    String decodedUri = Uri.decode(String.valueOf(uri));
+                    prefEditor.putString("syncFolder", decodedUri);
+                    syncFolder = decodedUri;
+                    prefEditor.apply();
+                }
+            }
+        });
+
+        syncFolder = sharedPreferences.getString("syncFolder",null);
+        Uri syncFolderUri = Uri.parse(syncFolder);
+
+        if(syncFolder != null){
+            if (!fileManger.folderExists(syncFolderUri)) {
+                selectSyncFolderDialog();
+            }
+        }else {
+            selectSyncFolderDialog();
+        }
+
+        syncFolderUri = Uri.parse(syncFolder);
+
+        app.syncFolder = syncFolder;
+
+        Log.d("DIRECTORY", fileManger.hashMapToJson(fileManger.scanFolder(syncFolderUri)));
+
         setContentView(R.layout.activity_main);
 
         Intent serviceIntent = new Intent(this, BackgroundService.class);
 
         createNotificationChannel();
         startForegroundService(serviceIntent);
-
-        app = (OmniSyncApplication) getApplicationContext();
 
         selfIP = NetworkUtils.getIPAddress();
         app.selfIP = selfIP;
@@ -197,8 +249,23 @@ public class MainActivity extends AppCompatActivity {
         });
 
         getBandwidth();
+
+        SyncFTPServer ftpServer = new SyncFTPServer(getApplicationContext());
+        ftpServer.startServer();
+        app.ftpServer = ftpServer;
+
+        SyncFTPClient ftpClient = new SyncFTPClient("omnisync", "omnisync");
+        app.ftpClient = ftpClient;
     }
 
+    private void selectSyncFolder(){
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        folderSelectLauncher.launch(intent);
+    }
+
+    private void selectSyncFolderDialog(){
+        selectSyncFolder();
+    }
 
     private void getBandwidth() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
