@@ -5,10 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.provider.OpenableColumns;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.documentfile.provider.DocumentFile;

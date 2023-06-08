@@ -48,7 +48,7 @@ public class HTTPClient {
 
     public String getFilesOnRemote(String url, PeerManagerCallBack pmu) throws IOException {
 
-        url += "/" + "hostCapabilities";
+        url += "/" + "files";
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url, new Response.Listener<JSONObject>() {
             @Override

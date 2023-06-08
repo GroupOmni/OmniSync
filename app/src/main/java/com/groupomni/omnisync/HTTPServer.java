@@ -3,13 +3,12 @@ package com.groupomni.omnisync;
 import android.content.Context;
 import android.net.Uri;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
 

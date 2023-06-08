@@ -100,7 +100,10 @@ public class BackgroundService extends Service {
             @Override
             public void run() {
                 while (true){
-                    if (app.fileMangerUtils != null) {
+                    if (app.fileMangerUtils != null && app.syncFolder != null) {
+                        if(!app.ftpServer.isRunning){
+                            app.ftpServer.startServer();
+                        }
                         HashMap<String, HashMap<String, Object>> localFiles = app.fileMangerUtils.scanFolder(Uri.parse(app.syncFolder));
                         for(DeviceListItem peer : app.deviceList){
 
@@ -119,7 +122,7 @@ public class BackgroundService extends Service {
                         }
                     }
                     try {
-                        Thread.sleep(10000);
+                        Thread.sleep(20000);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }

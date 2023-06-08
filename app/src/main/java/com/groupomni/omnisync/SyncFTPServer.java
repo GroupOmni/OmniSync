@@ -6,11 +6,7 @@ import android.util.Log;
 
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
-import org.apache.ftpserver.command.Command;
-import org.apache.ftpserver.command.CommandFactory;
-import org.apache.ftpserver.command.CommandFactoryFactory;
 import org.apache.ftpserver.ftplet.Authority;
-import org.apache.ftpserver.ftplet.AuthorizationRequest;
 import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.ftplet.FtpReply;
 import org.apache.ftpserver.ftplet.FtpRequest;
@@ -19,25 +15,14 @@ import org.apache.ftpserver.ftplet.Ftplet;
 import org.apache.ftpserver.ftplet.FtpletContext;
 import org.apache.ftpserver.ftplet.FtpletResult;
 import org.apache.ftpserver.ftplet.UserManager;
-import org.apache.ftpserver.impl.FtpIoSession;
-import org.apache.ftpserver.impl.FtpServerContext;
 import org.apache.ftpserver.listener.ListenerFactory;
-
-import org.apache.ftpserver.command.impl.STOR;
-import org.apache.ftpserver.command.impl.RETR;
-import org.apache.ftpserver.usermanager.AnonymousAuthentication;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.apache.ftpserver.usermanager.impl.BaseUser;
-import org.apache.ftpserver.usermanager.impl.ConcurrentLoginPermission;
 import org.apache.ftpserver.usermanager.impl.WritePermission;
-
-import org.apache.ftpserver.usermanager.impl.TransferRatePermission;
-import org.apache.ftpserver.usermanager.impl.WriteRequest;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,12 +30,15 @@ import java.util.Map;
 public class SyncFTPServer {
 
     private OmniSyncApplication app;
+    public boolean isRunning;
 
     public SyncFTPServer(Context context) {
         app = (OmniSyncApplication) context;
+        isRunning = false;
     }
 
     public void startServer() {
+        isRunning = true;
         FtpServerFactory serverFactory = new FtpServerFactory();
 
         ListenerFactory listenerFactory = new ListenerFactory();
@@ -60,8 +48,36 @@ public class SyncFTPServer {
 
         PropertiesUserManagerFactory userManagerFactory = new PropertiesUserManagerFactory();
         String externalStoragePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        String userPropertiesPath = externalStoragePath + "/OmniSync/user.properties";
+        String userPropertiesPath = externalStoragePath + "/.OmniSync/user.properties";
         userManagerFactory.setFile(new File(userPropertiesPath));
+
+        File userPropertiesFile = new File(userPropertiesPath);
+        if (!userPropertiesFile.exists()) {
+            // Create the parent directory if it doesn't exist
+            File parentDir = userPropertiesFile.getParentFile();
+            assert parentDir != null;
+            if (!parentDir.exists()) {
+                if (parentDir.mkdirs()) {
+                    System.out.println("Parent directory created: " + parentDir.getAbsolutePath());
+                } else {
+                    System.err.println("Failed to create parent directory: " + parentDir.getAbsolutePath());
+                    // Handle the error accordingly
+                }
+            }
+
+            try {
+                // Create the user.properties file
+                if (userPropertiesFile.createNewFile()) {
+                    System.out.println("user.properties file created: " + userPropertiesFile.getAbsolutePath());
+                } else {
+                    System.err.println("Failed to create user.properties file: " + userPropertiesFile.getAbsolutePath());
+                    // Handle the error accordingly
+                }
+            } catch (IOException e) {
+                System.err.println("Failed to create user.properties file: " + e.getMessage());
+                // Handle the exception accordingly
+            }
+        }
 
         Log.d("FTP SERVER", userPropertiesPath);
 
@@ -69,7 +85,10 @@ public class SyncFTPServer {
         BaseUser user = new BaseUser();
         user.setName("omnisync");
         user.setPassword("omnisync");
-        user.setHomeDirectory(externalStoragePath + "/OmniSync");
+        String home = app.syncFolder.split(":")[2];
+        String FTPHome = externalStoragePath + "/" + home;
+        Log.d("FTP SERVER", "Home directory : " + FTPHome);
+        user.setHomeDirectory(FTPHome);
 
         List<Authority> authorities = new ArrayList<Authority>();
         authorities.add(new WritePermission());

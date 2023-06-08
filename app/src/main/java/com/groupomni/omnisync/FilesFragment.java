@@ -1,19 +1,16 @@
 package com.groupomni.omnisync;
 
-import static android.content.Intent.getIntent;
-
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 
@@ -63,13 +60,15 @@ public class FilesFragment extends Fragment {
         TextView noFilesText = view.findViewById(R.id.nofiles_textview);
 
 //        assert getArguments() != null;
-        Log.d("DIRECTORY", "folder viewer root : " + app.syncFolder);
+        Log.d("FRAGMENT FILES", "folder viewer root : " + app.syncFolder);
         String path;
-        if (mParam1 == null) {
-            path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/OmniSync";
+        if(app.syncFolder != null) {
+            path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + app.syncFolder.split(":")[2];
+            Log.d("FRAGMENT FILES", path);
         }else{
-            path = mParam1;
+            return view;
         }
+
         File root = new File(path);
         File[] filesAndFolders = root.listFiles();
 

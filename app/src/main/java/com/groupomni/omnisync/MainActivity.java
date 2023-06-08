@@ -38,7 +38,6 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -138,15 +137,19 @@ public class MainActivity extends AppCompatActivity {
                     String decodedUri = Uri.decode(String.valueOf(uri));
                     prefEditor.putString("syncFolder", decodedUri);
                     syncFolder = decodedUri;
+                    app.syncFolder = decodedUri;
                     prefEditor.apply();
                 }
             }
         });
 
         syncFolder = sharedPreferences.getString("syncFolder",null);
-        Uri syncFolderUri = Uri.parse(syncFolder);
+        Uri syncFolderUri;
+        Log.d("DIRECTORY", "Sync folder URI : " + syncFolder);
+
 
         if(syncFolder != null){
+            syncFolderUri = Uri.parse(syncFolder);
             if (!fileManger.folderExists(syncFolderUri)) {
                 selectSyncFolderDialog();
             }
@@ -154,12 +157,17 @@ public class MainActivity extends AppCompatActivity {
             selectSyncFolderDialog();
         }
 
-        syncFolderUri = Uri.parse(syncFolder);
 
-        app.syncFolder = syncFolder;
 
-        Log.d("DIRECTORY", fileManger.hashMapToJson(fileManger.scanFolder(syncFolderUri)));
+        Log.d("DIRECTORY", "The folder is : " + syncFolder);
 
+        if(syncFolder != null) {
+            syncFolderUri = Uri.parse(syncFolder);
+            Log.d("DIRECTORY", "Sync folder path : " + syncFolderUri.getPath());
+            app.syncFolder = syncFolder;
+
+            Log.d("DIRECTORY", fileManger.hashMapToJson(fileManger.scanFolder(syncFolderUri)));
+        }
         setContentView(R.layout.activity_main);
 
         Intent serviceIntent = new Intent(this, BackgroundService.class);
@@ -185,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
 
         app.peerManagerUtils = peerManagerUtils;
 
-        app.appContext = this;
+        OmniSyncApplication.appContext = this;
 
         if(app.deviceList == null){
             app.deviceList = new ArrayList<>();
@@ -251,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
         getBandwidth();
 
         SyncFTPServer ftpServer = new SyncFTPServer(getApplicationContext());
-        ftpServer.startServer();
+
         app.ftpServer = ftpServer;
 
         SyncFTPClient ftpClient = new SyncFTPClient("omnisync", "omnisync");
