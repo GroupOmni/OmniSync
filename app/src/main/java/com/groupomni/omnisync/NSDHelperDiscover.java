@@ -27,8 +27,6 @@ class NSDHelperDiscover {
 
     private OnResolveCompleted onResolveCompletedListUpdate;
 
-//    public Thread startDLthread;
-//    public Thread stopDLthread;
 
 
     NSDHelperDiscover(Context context) {
@@ -66,7 +64,6 @@ class NSDHelperDiscover {
             NsdManager.ResolveListener localResolveListener = initializeResolveListener();
 
             synchronized (resolveLock) {
-//                Log.d(TAG, "resolveLock acquired");
                 localResolveListenerList.add(localResolveListener);
 
                 Thread resolveThread = new Thread(){
@@ -90,8 +87,6 @@ class NSDHelperDiscover {
                 }
 
                 isResolved = false;
-//                Log.d(TAG, "resolveLock FALSE");
-//                Log.d(TAG, "EXIT");
 
             }
         }
@@ -140,9 +135,7 @@ class NSDHelperDiscover {
 
             @Override
             public void onServiceFound(NsdServiceInfo service) {
-//                Log.d(TAG, "Service discovery success " + service);
                 if (!service.getServiceType().equals(Constants.NSD_SERVICE_TYPE)) {
-//                    Log.d(TAG, "Unknown Service Type: " + service.getServiceType());
                 } else if (service.getServiceName().contains(Constants.NSD_SERVICE_NAME)) {
                     discoveredServices.add(service);
                 }
@@ -156,18 +149,15 @@ class NSDHelperDiscover {
             @Override
             public void onDiscoveryStopped(String serviceType) {
                 Log.i(TAG, "Discovery stopped: " + serviceType);
-//                resolveDiscoveredServices();
             }
 
             @Override
             public void onStartDiscoveryFailed(String serviceType, int errorCode) {
-//                Log.e(TAG, "Discovery failed: Error code:" + errorCode);
                 nsdManager.stopServiceDiscovery(this);
             }
 
             @Override
             public void onStopDiscoveryFailed(String serviceType, int errorCode) {
-//                Log.e(TAG, "Discovery failed: Error code:" + errorCode);
                 nsdManager.stopServiceDiscovery(this);
             }
         };
@@ -181,25 +171,20 @@ class NSDHelperDiscover {
 
             @Override
             public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
-//                Log.e(TAG, "Resolve failed for service: " + serviceInfo + ", Error code: " + errorCode);
                 if (errorCode == NsdManager.FAILURE_ALREADY_ACTIVE) {
                     Log.e(TAG, "FAILURE_ALREADY_ACTIVE");
                 }
 
                 synchronized (resolveLock) {
                     isResolved = true;
-//                    Log.d(TAG, "isResolved TRUE");
                     resolveLock.notifyAll();
-//                    Log.d(TAG, "notify ALL");
                 }
             }
 
             @Override
             public void onServiceResolved(NsdServiceInfo serviceInfo) {
-//                Log.d(TAG, "Resolve Succeeded. " + serviceInfo);
 
                 resolvedServices.add(serviceInfo);
-//                Log.d(TAG, "No of discovered devices in onServiceFound : " + String.valueOf(resolvedServices.size()));
 
                 app.deviceList = new ArrayList<>();
 
@@ -215,9 +200,7 @@ class NSDHelperDiscover {
                 }
                 synchronized (resolveLock) {
                     isResolved = true;
-//                    Log.d(TAG, "isResolved TRUE");
                     resolveLock.notifyAll();
-//                    Log.d(TAG, "notify ALL");
                 }
 
 

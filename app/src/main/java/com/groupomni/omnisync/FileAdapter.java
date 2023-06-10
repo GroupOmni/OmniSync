@@ -59,7 +59,6 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder>{
                             .addToBackStack(null)
                             .commit();
                 }else{
-                    //open thte file
                     try {
                         Intent intent = new Intent();
                         intent.setAction(android.content.Intent.ACTION_VIEW);

@@ -53,7 +53,6 @@ public class HTTPClient {
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-//                        Log.d("RESPONSE", response.toString());
                 pmu.processResponse(response);
             }
         },

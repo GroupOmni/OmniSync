@@ -40,7 +40,6 @@ public class SyncFTPClient {
             String localFolderPath = params[3];
 
             try {
-                // Connect to the FTP server
                 ftpClient.connect(host, port);
 
                 int reply = ftpClient.getReplyCode();
@@ -49,23 +48,17 @@ public class SyncFTPClient {
                     return false;
                 }
 
-                // Login to the FTP server
                 if (ftpClient.login(username, password)) {
-                    // Set binary mode for file transfer
                     ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
-                    // Enter passive mode (optional)
                     ftpClient.enterLocalPassiveMode();
 
-                    // Get the file name from the remote file path
                     String fileName = remoteFilePath.substring(remoteFilePath.lastIndexOf("/") + 1);
 
-                    // Set the local file path
                     String localFilePath = localFolderPath + "/" + fileName;
 
                     Log.d("DIRECTORY FTP", "Folder path and file name : " + localFolderPath + ", "+ fileName);
 
-                    // Check if the local file already exists
                     DocumentFile localFile = fileManager.createFile(Uri.parse(localFolderPath), fileName, "application/octet-stream");
                     if (localFile != null && localFile.exists()) {
                         Log.i("DIRECTORY FTP", "Local file exists and is not null : " + localFile.getUri());
@@ -111,7 +104,6 @@ public class SyncFTPClient {
                     Log.e("FTP CLIENT", "Failed to login to the FTP server.");
                 }
 
-                // Logout and disconnect from the FTP server
                 ftpClient.logout();
                 ftpClient.disconnect();
             } catch (IOException e) {
@@ -123,8 +115,6 @@ public class SyncFTPClient {
 
         @Override
         protected void onPostExecute(Boolean result) {
-            // This method will be called after the background task is complete
-            // You can perform any UI updates or post-processing here
         }
     }
 

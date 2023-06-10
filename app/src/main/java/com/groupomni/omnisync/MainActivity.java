@@ -77,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            // Retrieve the service instance
             BackgroundService.LocalBinder binder = (BackgroundService.LocalBinder) iBinder;
             backgroundService = binder.getService();
             isServiceBound = true;
@@ -85,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            // Handle disconnection from the service
             isServiceBound = false;
         }
     };

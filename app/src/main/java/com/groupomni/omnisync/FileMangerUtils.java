@@ -85,7 +85,6 @@ public class FileMangerUtils {
         if (authority != null) {
             ProviderInfo providerInfo = context.getPackageManager().resolveContentProvider(authority, PackageManager.GET_META_DATA);
             if (providerInfo != null && providerInfo.exported) {
-                // Provider is exported, assume it is not write-locked
                 return false;
             }
         }
@@ -95,16 +94,13 @@ public class FileMangerUtils {
             if (pfd != null) {
                 pfd.close();
             } else {
-                // Failed to open file descriptor, assume it is write-locked
                 return true;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            // Error occurred, assume it is write-locked
             return true;
         }
 
-        // File is not write-locked
         return false;
     }
 

@@ -25,7 +25,6 @@ public class DevicesFragment extends Fragment implements NSDHelperDiscover.OnRes
     private OmniSyncApplication app;
 
     public DevicesFragment() {
-        // Required empty public constructor
     }
 
     @Override

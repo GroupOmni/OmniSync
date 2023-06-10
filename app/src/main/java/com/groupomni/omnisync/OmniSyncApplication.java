@@ -21,7 +21,7 @@ public class OmniSyncApplication extends Application {
 
     public long remainingStorage;
 
-    public int forgroundOnStartCommand;
+    public int foregroundOnStartCommand;
 
     public boolean isSuperPeer;
     public List<DeviceListItem> peers;

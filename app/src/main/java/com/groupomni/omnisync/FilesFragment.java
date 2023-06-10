@@ -17,19 +17,15 @@ import java.io.File;
 
 public class FilesFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
     private OmniSyncApplication app;
 
     public FilesFragment() {
-        // Required empty public constructor
     }
 
     public static FilesFragment newInstance(String path) {
@@ -53,13 +49,11 @@ public class FilesFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_files, container, false);
 
         RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
         TextView noFilesText = view.findViewById(R.id.nofiles_textview);
 
-//        assert getArguments() != null;
         Log.d("FRAGMENT FILES", "folder viewer root : " + app.syncFolder);
         String path;
         if(app.syncFolder != null) {

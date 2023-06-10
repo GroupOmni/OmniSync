@@ -44,13 +44,11 @@ class NSDHelperRegister {
      **********************************************************************************************/
     private void initializeServerSocket() {
         try {
-            // Initialize a server socket on the next available port.
             serverSocket = new ServerSocket(8081);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        // Store the chosen port.
         localPort = serverSocket.getLocalPort();
 
         registerService(localPort);
@@ -73,9 +71,6 @@ class NSDHelperRegister {
 
             @Override
             public void onServiceRegistered(NsdServiceInfo NsdServiceInfo) {
-                // Save the service name. Android may have changed it in order to
-                // resolve a conflict, so update the name you initially requested
-                // with the name Android actually used.
                 serviceName = NsdServiceInfo.getServiceName();
                 app.registration_state = "done";
                 Toast.makeText(context, "Service Name: " + serviceName + " Port No: " + localPort, Toast.LENGTH_SHORT).show();
@@ -83,14 +78,11 @@ class NSDHelperRegister {
 
             @Override
             public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-//                serviceName = NsdServiceInfo.getServiceName();
                 Toast.makeText(context, "Registration failed", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onServiceUnregistered(NsdServiceInfo arg0) {
-                // Service has been unregistered. This only happens when you call
-                // NsdManager.unregisterService() and pass in this listener.
                 Toast.makeText(context, "Service unregistered", Toast.LENGTH_SHORT).show();
             }
 

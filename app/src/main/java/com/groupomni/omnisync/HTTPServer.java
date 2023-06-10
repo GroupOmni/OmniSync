@@ -91,15 +91,12 @@ public class HTTPServer extends NanoHTTPD{
                     return newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/json", "{\"error\":\"Invalid endpoint\"}");
             }
         } else if (Method.POST.equals(method)) {
-            // Handle POST requests
             if ("/data".equals(uri)) {
                 try {
-                    // Read data from the request body
                     Map<String, String> formData = new HashMap<>();
                     session.parseBody(formData);
                     String data = formData.get("data");
 
-                    // Process the data and return a response
                     return newFixedLengthResponse("Received data: " + data);
                 } catch (ResponseException | IOException e) {
                     e.printStackTrace();

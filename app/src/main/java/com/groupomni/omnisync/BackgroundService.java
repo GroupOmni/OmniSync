@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.util.HashMap;
 
 public class BackgroundService extends Service {
-    // Implement necessary methods
-    // ...
     private static final int NOTIFICATION_ID = 1;
     private OmniSyncApplication app;
 
@@ -63,12 +61,12 @@ public class BackgroundService extends Service {
 
         app = (OmniSyncApplication) getApplicationContext();
 
-        app.forgroundOnStartCommand += 1;
+        app.foregroundOnStartCommand += 1;
 
         Thread backgroundLog = new Thread(new Runnable() {
             @Override
             public void run() {
-                Log.d("BACKGROUND", "Background : " + String.valueOf(app.forgroundOnStartCommand));
+                Log.d("BACKGROUND", "Background : " + String.valueOf(app.foregroundOnStartCommand));
             }
         });
 
@@ -139,7 +137,6 @@ public class BackgroundService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        // Return an instance of IBinder to communicate with the service
         return null;
     }
 
@@ -151,8 +148,6 @@ public class BackgroundService extends Service {
     }
 
     private Notification createNotification() {
-        // Create and return a notification for the foreground service
-        // You can customize the notification based on your requirements
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "My Notification")
                 .setContentTitle("Foreground Service")
                 .setContentText("Service is running")
